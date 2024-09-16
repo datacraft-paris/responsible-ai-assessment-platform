@@ -71,14 +71,16 @@ Host prod
 
 - Copy a **local file to a remote host**: `scp {{path/to/local_file}} {{remote_host}}:{{path/to/remote_file}}`
 
-- Copy a file **from a remote host to a local directory**: `scp {{remote_host}}:{{path/to/remote_file}} {{path/to/local_directory}}`
+- Copy a file **from a remote host to a local directory**:
+  - Navigate **locally** to your target folder
+  - `scp {{remote_host}}:{{path/to/remote_file}} {{path/to/local_directory}}`
 
 ```sh
-scp -i ~/.ssh/<CLE> -P <PORT> <UNIX_USER>@<IP>:/home/ubuntu/platform_db_prod.dump ./
+scp -i ~/.ssh/<CLE> -P <PORT> <UNIX_USER>@<IP>:/home/ubuntu/pf-assessment-dsrc/platform_db_prod_2024-09-16-10-01.dump ./
 # For example
-scp -i ~.ssh/preprod -P 22222 ubuntu@51.68.125.118:/home/ubuntu/platform_db_prod.dump ./
+scp -i ~.ssh/preprod -P 22222 ubuntu@51.68.125.118:/home/ubuntu/pf-assessment-dsrc/platform_db_prod_2024-09-16-10-01.dump ./
 # with .ssh/config ready
-scp ubuntu@prod:/home/ubuntu/platform_db_prod.dump ./
+scp ubuntu@prod:/home/ubuntu/pf-assessment-dsrc/platform_db_prod_2024-09-16-10-01.dump ./
 ```
 
 > Please have a look at the /dump/dump_db_prod.sh script: a zip file containing several dumps can be generated and fetched!
@@ -372,7 +374,7 @@ tail -f /var/log/syslog                       # server
 make prod_backup
 
 # Save locally your db - file name to be adapted
-scp ubuntu@prod:/home/ubuntu/platform_db_prod.dump ./
+scp ubuntu@prod:/home/ubuntu/pf-assessment-dsrc/platform_db_prod_2024-09-16-10-01.dump ./
 ```
 
 The deploy script (`./deploy.sh`) is ready to handle this but as an overview of the required steps, here is what is happening during a code release:
