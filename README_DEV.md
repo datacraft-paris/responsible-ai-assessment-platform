@@ -141,14 +141,22 @@ docker exec -i -u postgres $(docker ps | grep postgres | awk '{print $1}') pg_re
 #### New instructions for certificate renewal
 
 1. Local preparation: Generate a CSR and a private key with an openssl command provided by the web provider (e.g. Gandi), typically:
-  `openssl req -nodes -new -newkey rsa:2048 -sha256 -keyout 'labeliadotorg.key' -out 'labeliadotorg.csr' -subj '/CN=*.labelia.org' -utf8`
-1. Generate the certificate via the web provider interface
-1. Local preparation: Append the provider intermediary certificate (`cat GandiStandardSSLCA2.pem >> labelia.org.crt` or simply by copy-pasting it within the file)
+   1. Open a terminal (e.g. git bash) and navigate locally to a target folder
+   1.  `openssl req -nodes -new -newkey rsa:2048 -sha256 -keyout 'labeliadotorg.key' -out 'labeliadotorg.csr' -subj '/CN=*.labelia.org' -utf8`
+1. Using the CSR, generate the certificate via the web provider interface, validate it, and download it. Change the certificate filename to `labelia.org.crt` if needed
+1. Check if there is a new version of the intermediate certificate, if so download it
+1. Local preparation: Append the provider intermediary certificate (`cat GandiRSADomainValidationSecureServerCA3.pem >> labelia.org.crt` or simply by copy-pasting it within the file)
 1. On the server: replace the certificate file `labelia.org.crt` and the private key `labeliadotorg.key` that was used to generate the certificate. They should be located in the `/ssl` folder (in the home folder of the user Ubuntu)
+   1. `nano labeliadotorg.key`
+   1. Select the content with Shift+Arrows, use Ctrl+K to delete (actually cut)
+   1. Open locally the `labeliadotorg.key` file and copy its content. In nano, copy it using Right-click + "Paste"
+   1. Then Ctrl+X to exit nano, Y to confirm saving changes, enter to validate the filename
 1. Pay attention to the filenames indicated, as they might be referenced in the nginx configuration
 1. Stop and relaunch the application so that the new files can be taken into account:
+   1. Navigate to the codebase (from the `/ssl` folder: `cd ../pf-assessment-dsrc`)
    1. First: `make <env>_down`
    1. Then: `make <env>_buildupd`
+1. Exit the server with Ctrl+D
 
 #### Details on the above commands
 
