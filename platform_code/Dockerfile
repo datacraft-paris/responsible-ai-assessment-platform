@@ -1,26 +1,28 @@
-# Pull official base image python
-FROM python:3.8.0-alpine
+# Pull official base image
+FROM python:3.12-alpine
 
-# set environment variables
+# Set environment variables
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
 
-# set work directory
+# Set work directory
 RUN mkdir code
-WORKDIR code
+WORKDIR /code
 
-# copy project to /code
+# Install system dependencies
+RUN apk update && apk add --no-cache \
+    postgresql-dev gcc python3-dev \
+    musl-dev jpeg-dev zlib-dev libpq libjpeg
+
+# Copy project files
 COPY . .
 
-# install psycopg2 dependencies
-RUN apk update \
-    && apk add postgresql-dev gcc python3-dev \
-        musl-dev jpeg-dev zlib-dev libpq libjpeg
-
-RUN /usr/local/bin/python -m pip install --upgrade pip
+# Upgrade pip and install dependencies
+RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-# make entrypoint.sh executable
+# Make entrypoint.sh executable
 RUN chmod +x ./entrypoint.sh
 
+# Set entrypoint
 ENTRYPOINT ["sh", "/code/entrypoint.sh"]

@@ -24,8 +24,10 @@
             <div>
                 <div class="margin-20">{{ login_form.password.label_tag }}</div>
             </div>
-            <div>
-                <div class="">{{ login_form.password }}</div>
+            <div class="">
+                <div class="" id="login-password">{{ login_form.password }}
+                    <span onClick="togglePassword('login-password')" class="fa fa-fw fa-eye field-icon login-icon pr-2 ml-n4"></span>
+                </div>
             </div>
         </div>
     </div>
@@ -53,3 +55,23 @@
 <div class="margin-10 center">
     <a href="{% url 'home:password_reset' %}">{% trans "Forgotten password?" %}</a>
 </div>
+
+
+<script>
+
+function togglePassword(pwdId) {
+    const passwordInput = document.querySelector(`#${pwdId}`).querySelector("input");
+    const eyeIcon = document.querySelector(".login-icon");
+
+    if (passwordInput) {
+        // Toggle the type attribute
+        const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+        passwordInput.setAttribute("type", type);
+
+        // Toggle the eye icon
+        eyeIcon.classList.toggle("fa-eye");
+        eyeIcon.classList.toggle("fa-eye-slash");
+    }
+}
+
+</script>

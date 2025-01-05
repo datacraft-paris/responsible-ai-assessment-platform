@@ -15,7 +15,7 @@ from django.core.mail import EmailMessage
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
-from django.utils.encoding import force_bytes, force_text
+from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.translation import get_language
 from django.utils.translation import gettext as _
@@ -138,7 +138,7 @@ class HomepageView(LoginView):
 def activate(request, uidb64, token):
     # Activate the account
     try:
-        uid = force_text(urlsafe_base64_decode(uidb64))
+        uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.object.get(pk=uid)
     except (TypeError, ValueError, OverflowError, ObjectDoesNotExist) as e:
         user = None

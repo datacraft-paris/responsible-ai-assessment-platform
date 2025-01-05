@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import mimetypes
 import os
 
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.sitemaps",
     "assessment.apps.AssessmentConfig",
     "home.apps.HomeConfig",
-    "bootstrap4",
+    "django_bootstrap5",
     "django.contrib.postgres",
     "django_countries",
     "markdownify",

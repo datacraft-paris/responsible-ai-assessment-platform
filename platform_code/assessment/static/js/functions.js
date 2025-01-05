@@ -1108,3 +1108,5 @@ function changeIconRelease(divHeader) {
         }
     }
 }
+
+

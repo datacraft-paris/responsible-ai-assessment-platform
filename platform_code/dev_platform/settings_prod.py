@@ -14,7 +14,7 @@ import mimetypes
 import os
 
 import sentry_sdk
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.sitemaps",
     "assessment.apps.AssessmentConfig",
     "home.apps.HomeConfig",
-    "bootstrap4",
+    "django_bootstrap5",
     "django.contrib.postgres",
     "django_countries",
     "markdownify",
