@@ -41,7 +41,7 @@ ssh-keygen -t rsa -b 4096 -C "<<EMAIL_CHANGE_ME>>" -f ~/.ssh/<KEY_NAME_CHANGE_ME
 ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/id_ed25519 -C "<<EMAIL_CHANGE_ME>>" -f ~/.ssh/<KEY_NAME_CHANGE_ME>
 ```
 
-Use the OVH web interface for first login, then you will be authorized to append this ssh key to `.ssh/authorized_keys` or with `ssh-copy-id`. When it's done you can connect to the server you created.
+Use the OVH web interface for first login, then you will be authorized to append this ssh key to `home/ubuntu/.ssh/authorized_keys` (note that this folder might not appear with `ls`, in which case you'll have to `cd .ssh` directly) with command `sudo nano authorized_keys` or with `ssh-copy-id`. When it's done you can connect to the server you created.
 
 #### Connection
 
