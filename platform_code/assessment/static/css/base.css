@@ -485,6 +485,7 @@ li {
     grid-template-columns: 50% 1px 50%;
     margin-left: 10%;
     margin-right: 10%;
+    margin-bottom: 60px;
 }
 
 /******************************************* END GRID ********************************************************/

@@ -191,6 +191,7 @@ MEDIA_URL = "/media/"
 # Email configuration
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST_USER = os.getenv("EMAIL_USER")
+DEFAULT_FROM_EMAIL = os.getenv("EMAIL_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")
 EMAIL_HOST = os.getenv("EMAIL_URL")
 EMAIL_PORT = os.getenv("EMAIL_PORT")

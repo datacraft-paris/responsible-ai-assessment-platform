@@ -180,5 +180,7 @@ def send_labelling_email(request, user, organisation, evaluation, mail_subject, 
         },
     )
     to_email = os.environ.get("EMAIL_USER")
-    email = EmailMessage(mail_subject, message, to=[to_email])
+    email = EmailMessage(
+        mail_subject, message, to=[to_email], from_email=settings.EMAIL_HOST_USER
+    )
     email.send()
