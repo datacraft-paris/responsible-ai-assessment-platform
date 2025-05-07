@@ -126,7 +126,9 @@ class HomepageView(LoginView):
                 },
             )
             to_email = form.cleaned_data.get("email")
-            email = EmailMessage(mail_subject, message, to=[to_email])
+            email = EmailMessage(
+                mail_subject, message, to=[to_email], from_email=settings.EMAIL_HOST_USER
+            )
             email.send()
             logger.info(f"[account_creation] The user {user.email} created an account")
             return render(request, "home/account/acc_activate_done.html")

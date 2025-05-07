@@ -367,7 +367,9 @@ class SummaryView(LoginRequiredMixin, DetailView):
                 "protocol": "http" if settings.DEBUG else "https",
             },
         )
-        email = EmailMessage(mail_subject, message, to=[email_address])
+        email = EmailMessage(
+            mail_subject, message, to=[email_address], from_email=settings.EMAIL_HOST_USER
+        )
         email.send()
         PendingInvitation.create_pending_invitation(
             email=email_address, organisation=organisation, role=role
