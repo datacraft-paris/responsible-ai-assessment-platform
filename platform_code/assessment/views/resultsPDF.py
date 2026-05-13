@@ -34,6 +34,8 @@ from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Paragraph, Table, TableStyle
+from reportlab.graphics.shapes import Drawing
+from reportlab.graphics.charts.spider import SpiderChart
 from sentry_sdk import capture_message
 
 logger = logging.getLogger("monitoring")
@@ -165,6 +167,7 @@ class ResultsPDFView(LoginRequiredMixin, DetailView):
                 400,
             )
             self.cursor -= self.PARAGRAPH_SPACE
+            self.draw_radar_chart(context)
         self.cursor -= self.LINE_JUMP
 
         # Risk exposition
@@ -242,6 +245,46 @@ class ResultsPDFView(LoginRequiredMixin, DetailView):
         )
         self.cursor -= self.LINE_JUMP * 2
 
+    
+    def draw_radar_chart(self, context):
+        """
+        Génère et dessine le graphique Radar (Spider Chart)
+        """
+        labels = []
+        data = []
+        
+        for section in context["dict_sections_elements"]:
+            # On prend le numéro de la section pour le graphique
+            labels.append(f"S{section.master_section.order_id}")
+            section_points = (section.calculate_score_per_section() / section.max_points) * 100
+            data.append(section_points)
+
+        # Création du conteneur de dessin
+        drawing = Drawing(self.PAGE_WIDTH, 250)
+        chart = SpiderChart()
+        chart.x = 175  # Position horizontale
+        chart.y = 25   # Position verticale
+        chart.width = 200
+        chart.height = 200
+        chart.data = [data]
+        chart.labels = labels
+        
+        # Style visuel (Bleu Labelia)
+        chart.fillColor = colors.Color(0, 0.4, 0.8, alpha=0.3)
+        chart.strokeColor = colors.Color(0, 0.4, 0.8)
+        chart.strands.strokeColor = colors.Color(0, 0.4, 0.8)
+        chart.spokes.strokeDashArray = (2, 2)
+        
+        drawing.add(chart)
+
+        # On descend le curseur pour laisser la place au graphique (250 pixels)
+        self.cursor -= 250 
+        drawing.drawOn(self.pdf, 0, self.cursor)
+        self.cursor -= self.LINE_JUMP
+
+
+
+    
     def print_stamp(self, context):
         """
         This method prints the stamp with the current date and the organisation name.
