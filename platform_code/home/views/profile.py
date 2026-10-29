@@ -1,4 +1,6 @@
 import logging
+import time
+from contextlib import contextmanager
 
 from assessment.forms import EvaluationForm, EvaluationMutliOrgaForm
 from assessment.models import Evaluation, EvaluationElement
@@ -34,6 +36,19 @@ from .utils import (
 logger = logging.getLogger("monitoring")
 
 
+@contextmanager
+def profile_stage_timer(request_id, stage):
+    started_at = time.perf_counter()
+    logger.info("[profile_timing] request=%s stage=%s started", request_id, stage)
+    yield
+    logger.info(
+        "[profile_timing] request=%s stage=%s completed seconds=%.3f",
+        request_id,
+        stage,
+        time.perf_counter() - started_at,
+    )
+
+
 class ProfileView(LoginRequiredMixin, generic.DetailView):
     model = User
     template_name = "home/profile.html"
@@ -42,12 +57,15 @@ class ProfileView(LoginRequiredMixin, generic.DetailView):
     context = {}
 
     def get(self, request, *args, **kwargs):
+        request_id = format(id(request), "x")
         user = request.user
-        self.object = user
-        self.context = self.get_context_data(object=user)
+        with profile_stage_timer(request_id, "initial_context"):
+            self.object = user
+            self.context = self.get_context_data(object=user)
 
         # Catch the user_resources object
-        user_resources = manage_user_resource(request)
+        with profile_stage_timer(request_id, "user_resources"):
+            user_resources = manage_user_resource(request)
         if not user_resources:
             error_500_view_handler(request, exception=MultipleObjectsReturned())
 
@@ -55,44 +73,65 @@ class ProfileView(LoginRequiredMixin, generic.DetailView):
         self.context["tab"] = kwargs.get("tab", "evaluations")
 
         # Add resources to context
-        self.context = add_resources_dictionary(self.context, user, user_resources)
+        with profile_stage_timer(request_id, "resources"):
+            self.context = add_resources_dictionary(self.context, user, user_resources)
 
-        self.add_organisation_list_context(user)
+        with profile_stage_timer(request_id, "organisations"):
+            self.add_organisation_list_context(user)
 
         # Get the evaluations created by the user
         # This can be modified if we want all the evaluations of the organisations the user belong to
         # Can be empty
-        self.add_evaluations_context(user)
-        for evaluation in self.context["evaluations"]:
-            manage_missing_language(request, evaluation)
+        with profile_stage_timer(request_id, "evaluations_and_language"):
+            self.add_evaluations_context(user)
+            for evaluation in self.context["evaluations"]:
+                manage_missing_language(request, evaluation)
         # Get user notes on evaluations from the organizations to which the user belongs
-        self.add_notes_context(user)
-        self.add_action_plans(user)
+        with profile_stage_timer(request_id, "notes"):
+            self.add_notes_context(user)
+        with profile_stage_timer(request_id, "action_plans"):
+            self.add_action_plans(user)
 
         # If the scoring system has changed, it set the max points again for the evaluation, sections, EE
-        success_max_points = manage_evaluation_max_points(
-            request=request, evaluation_list=self.context["evaluations"]
-        )
+        with profile_stage_timer(request_id, "max_points"):
+            success_max_points = manage_evaluation_max_points(
+                request=request, evaluation_list=self.context["evaluations"]
+            )
         if not success_max_points:
             return redirect("home:user-profile")
 
-        self.context["evaluation_score_dic"] = manage_evaluation_score(
-            request=request, evaluation_list=self.context["evaluations"]
-        )
-        self.context["new_orga_form"] = OrganisationCreationForm(
-            prefix="organisation-creation"
-        )
-        self.context["new_evaluation_form"] = EvaluationMutliOrgaForm(
-            user=user, prefix="evaluation-creation"
-        )
+        with profile_stage_timer(request_id, "scores"):
+            self.context["evaluation_score_dic"] = manage_evaluation_score(
+                request=request, evaluation_list=self.context["evaluations"]
+            )
+        with profile_stage_timer(request_id, "forms"):
+            self.context["new_orga_form"] = OrganisationCreationForm(
+                prefix="organisation-creation"
+            )
+            self.context["new_evaluation_form"] = EvaluationMutliOrgaForm(
+                user=user, prefix="evaluation-creation"
+            )
 
         # Get the labelable evaluations
-        self.add_labelable_evaluation()
-        self.context["labelling_threshold"] = PlatformManagement.get_labelling_threshold()
+        with profile_stage_timer(request_id, "labelling"):
+            self.add_labelable_evaluation()
+            self.context["labelling_threshold"] = PlatformManagement.get_labelling_threshold()
 
-        self.context = add_last_version_last_assessment_dictionary(self.context)
-        self.context["change_logs"] = get_all_change_logs()
-        return self.render_to_response(self.context)
+        with profile_stage_timer(request_id, "assessment_version"):
+            self.context = add_last_version_last_assessment_dictionary(self.context)
+        with profile_stage_timer(request_id, "change_logs"):
+            self.context["change_logs"] = get_all_change_logs()
+        render_started_at = time.perf_counter()
+        logger.info("[profile_timing] request=%s stage=template_render started", request_id)
+        response = self.render_to_response(self.context)
+        response.add_post_render_callback(
+            lambda rendered: logger.info(
+                "[profile_timing] request=%s stage=template_render completed seconds=%.3f",
+                request_id,
+                time.perf_counter() - render_started_at,
+            )
+        )
+        return response
 
     def post(self, request, *args, **kwargs):
         """
