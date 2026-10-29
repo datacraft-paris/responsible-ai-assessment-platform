@@ -1,5 +1,38 @@
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
+
 from assessment.utils import markdownify_bold, markdownify_italic, select_label_choice
+from assessment.views.utils.utils import manage_missing_language
 from django.test import TestCase
+from django.utils.translation import LANGUAGE_SESSION_KEY
+
+
+class TestManageMissingLanguage(TestCase):
+    @patch("assessment.views.utils.utils.activate")
+    @patch("assessment.views.utils.utils.get_language_from_request", return_value="en")
+    def test_available_languages_are_cached_per_assessment(
+        self, get_language_from_request, activate
+    ):
+        assessment = SimpleNamespace(
+            pk=1, get_the_available_languages=Mock(return_value=["fr"])
+        )
+        request = SimpleNamespace(session={})
+        cache = {}
+
+        manage_missing_language(
+            request,
+            SimpleNamespace(assessment=assessment),
+            available_languages_cache=cache,
+        )
+        manage_missing_language(
+            request,
+            SimpleNamespace(assessment=assessment),
+            available_languages_cache=cache,
+        )
+
+        assessment.get_the_available_languages.assert_called_once_with()
+        self.assertEqual(request.session, {LANGUAGE_SESSION_KEY: "fr"})
+        self.assertEqual(activate.call_count, 2)
 
 
 class TestMarkdownify(TestCase):
