@@ -312,13 +312,20 @@ def create_radar_chart(object_list, math_expression, text_expression, hovertext_
         return None
 
 
-def manage_missing_language(request, evaluation, **kwargs):
+def manage_missing_language(request, evaluation, available_languages_cache=None, **kwargs):
     """
     If the user wants to change the language of the platform while not having the evaluation in the same
     language, reactive the language of the evaluation
     """
     lang_code = get_language_from_request(request)
-    if lang_code not in evaluation.assessment.get_the_available_languages():
+    assessment = evaluation.assessment
+    if available_languages_cache is None:
+        available_languages = assessment.get_the_available_languages()
+    else:
+        if assessment.pk not in available_languages_cache:
+            available_languages_cache[assessment.pk] = assessment.get_the_available_languages()
+        available_languages = available_languages_cache[assessment.pk]
+    if lang_code not in available_languages:
         valid_lang = "fr"
         # messages.warning(request, _("Your evaluation has not this language"))
         request.session[LANGUAGE_SESSION_KEY] = valid_lang
