@@ -63,8 +63,13 @@ class ProfileView(LoginRequiredMixin, generic.DetailView):
         # This can be modified if we want all the evaluations of the organisations the user belong to
         # Can be empty
         self.add_evaluations_context(user)
+        available_languages_cache = {}
         for evaluation in self.context["evaluations"]:
-            manage_missing_language(request, evaluation)
+            manage_missing_language(
+                request,
+                evaluation,
+                available_languages_cache=available_languages_cache,
+            )
         # Get user notes on evaluations from the organizations to which the user belongs
         self.add_notes_context(user)
         self.add_action_plans(user)
